@@ -8,4 +8,4 @@ var ordersSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('OrdersSchema', ordersSchema, 'ordersschema');
+module.exports = mongoose.model('Orders', ordersSchema, 'orders');
