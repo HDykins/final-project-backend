@@ -1,7 +1,7 @@
 {
   "server": {
     "hostName": "localhost",
-    "port": "8181"
+    "port": "8080"
   },
   "token": {
     "secret": "secretapplication",
