@@ -12,6 +12,7 @@ var DATABASE_NAME = CONFIG.database.name;
 var TOKEN_SECRET = CONFIG.token.secret;
 var TOKEN_EXPIRES = parseInt(CONFIG.token.expiresInSeconds, 10);
 var User = require('./models/user');
+var Orders = require('./models/orders');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -206,12 +207,29 @@ apiRouter.use(function verifyToken(request, response, next) {
   }
 });
 
-apiRouter.get('/orders/', function getAllOrders(request, response) {
+apiRouter.post('/users/orders/', function postOrders(request, response) {
 
-  response.json({
-    success: true
+  var orders = new Orders({
+    userChoices: request.body.userChoices
   });
 
+  console.log(request.body.userChoices);
+
+  orders.save(function (error) {
+
+    if (error) {
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+
+      throw error;
+    }
+
+    response.json({
+      success: true
+    });
+  });
 });
 
 app.use('/api', apiRouter);
