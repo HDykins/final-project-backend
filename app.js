@@ -210,7 +210,8 @@ apiRouter.use(function verifyToken(request, response, next) {
 apiRouter.post('/users/orders/', function postOrders(request, response) {
 
   var orders = new Orders({
-    userChoices: request.body.userChoices
+    userChoices: request.body.userChoices,
+    id: 12345
   });
 
   console.log(request.body.userChoices);
@@ -231,6 +232,29 @@ apiRouter.post('/users/orders/', function postOrders(request, response) {
     });
   });
 });
+
+
+apiRouter.get('/users/orders/:id', function getAllOrders(request, response) {
+
+  console.log(request.params);
+
+  var id = request.params.id;
+
+
+  Orders.find( { id: id }, function handleGetOrders(error, orders) {
+
+    if (error) {
+          response.status(500).json({
+            success: false,
+            message: 'Internal server error'
+          });
+
+          throw error;
+        }
+
+    response.json(orders);
+  });
+})
 
 app.use('/api', apiRouter);
 

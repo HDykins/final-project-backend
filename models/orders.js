@@ -5,6 +5,9 @@ var Mixed = mongoose.Schema.Types.Mixed;
 var ordersSchema = new Schema({
   userChoices: {
     type: Mixed
+  },
+  id : {
+  	type: Number
   }
 });
 
