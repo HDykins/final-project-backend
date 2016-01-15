@@ -6,8 +6,14 @@ var ordersSchema = new Schema({
   userChoices: {
     type: Mixed
   },
-  id : {
-  	type: Number
+  id: {
+  	type: String,
+  	required: true,
+  	unique: true
+  },
+  userId: {
+  	type: String,
+  	required: true
   }
 });
 

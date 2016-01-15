@@ -95,6 +95,8 @@ apiRouter.post('/users/authenticate', function authenticateUser(request, respons
 
 apiRouter.post('/users/', function createUser(request, response) {
 
+  console.log(request.body.id)
+
   // find the user
   User.findOne({
     email: request.body.email
@@ -143,7 +145,8 @@ apiRouter.post('/users/', function createUser(request, response) {
         var user = new User({
           email: request.body.email,
           password: hash,
-          phoneNumber: request.body.phoneNumber
+          phoneNumber: request.body.phoneNumber,
+          id: request.body.id
         });
 
         console.log(request.body)
@@ -167,6 +170,124 @@ apiRouter.post('/users/', function createUser(request, response) {
     });
   });
 });
+
+apiRouter.patch('/orders/:orderId', function handleUpdateOrder(request, response) {
+
+  // find the user
+  Orders.findOne({
+    id: request.params.orderId
+  }, function handleQuery(error, order) {
+
+    if (error) {
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+
+      throw error;
+    }
+
+    if (! order) {
+
+      response.status(404).json({
+        success: false,
+        message: 'Order not found.'
+      });
+
+      return;
+    }
+
+    User.findOne({
+      id: request.body.userId
+
+    }, function handleQuery(error, user) {
+
+    if (error) {
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+
+      throw error;
+    }
+
+    if (! user) {
+
+      response.status(404).json({
+        success: false,
+        message: 'User not found.'
+      });
+
+      return;
+    }
+
+    order.userId = user.id;
+
+    order.save(function (error) {
+
+      if (error) {
+        response.status(500).json({
+          success: false,
+          message: 'Internal server error'
+        });
+
+        throw error;
+      }
+
+      // return the information including token as JSON
+      response.json({
+        success: true,
+        order: order
+      });
+
+    });
+  });
+});
+});
+
+apiRouter.post('/users/orders/', function postOrders(request, response) {
+
+
+User.findOne({
+  id: request.body.userId
+  }, function handleQuery(error, user) {
+
+    if (error) {
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+
+      throw error;
+    }
+
+    
+
+
+  var order = new Orders({
+    // userChoices: request.body.userChoices,
+    id: request.body.id,
+    userId: user.id
+  });
+
+  order.save(function (error) {
+
+    if (error) {
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+
+      throw error;
+    }
+
+    response.json({
+      success: true
+    });
+  });
+});
+});
+
 
 // route middleware to verify a token
 apiRouter.use(function verifyToken(request, response, next) {
@@ -207,39 +328,15 @@ apiRouter.use(function verifyToken(request, response, next) {
   }
 });
 
-apiRouter.post('/users/orders/', function postOrders(request, response) {
 
-  var orders = new Orders({
-    userChoices: request.body.userChoices,
-    id: 12345
-  });
-
-  console.log(request.body.userChoices);
-
-  orders.save(function (error) {
-
-    if (error) {
-      response.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-
-      throw error;
-    }
-
-    response.json({
-      success: true
-    });
-  });
-});
-
-
-apiRouter.get('/users/orders/:id', function getAllOrders(request, response) {
+apiRouter.get('/users/orders/:id/', function getAllOrders(request, response) {
 
   console.log(request.params);
 
   var id = request.params.id;
 
+  console.log(id);
+  console.log(request.body);
 
   Orders.find( { id: id }, function handleGetOrders(error, orders) {
 

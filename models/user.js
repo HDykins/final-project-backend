@@ -14,6 +14,11 @@ var userSchema = new Schema({
   phoneNumber: {
   	type: Number,
   	required: true
+  },
+  id: {
+    type: String,
+    required: true,
+    unique: true
   }
 });
 
