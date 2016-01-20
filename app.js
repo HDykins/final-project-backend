@@ -12,18 +12,15 @@ var DATABASE_NAME = CONFIG.database.name;
 var TOKEN_SECRET = CONFIG.token.secret;
 var TOKEN_EXPIRES = parseInt(CONFIG.token.expiresInSeconds, 10);
 var User = require('./models/user');
-var Orders = require('./models/orders');
+var Order = require('./models/orders');
+var cors = require('cors');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-app.use(function (request, response, next) {
-  response.header("Access-Control-Allow-Origin", "*");
-  response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+app.use(cors());
 
 mongoose.connect('mongodb://' + HOST_NAME + '/' + DATABASE_NAME);
 
@@ -83,10 +80,13 @@ apiRouter.post('/users/authenticate', function authenticateUser(request, respons
         expiresIn: TOKEN_EXPIRES
       });
 
+      var id = user.id
+
       // return the information including token as JSON
       response.json({
         success: true,
-        token: token
+        token: token,
+        id: id
       });
 
     });
@@ -174,7 +174,7 @@ apiRouter.post('/users/', function createUser(request, response) {
 apiRouter.patch('/orders/:orderId', function handleUpdateOrder(request, response) {
 
   // find the user
-  Orders.findOne({
+  Order.findOne({
     id: request.params.orderId
   }, function handleQuery(error, order) {
 
@@ -245,7 +245,7 @@ apiRouter.patch('/orders/:orderId', function handleUpdateOrder(request, response
 });
 });
 
-apiRouter.post('/users/orders/', function postOrders(request, response) {
+apiRouter.post('/orders/', function postOrder(request, response) {
 
 
 User.findOne({
@@ -261,14 +261,14 @@ User.findOne({
       throw error;
     }
 
-    
 
-
-  var order = new Orders({
-    // userChoices: request.body.userChoices,
+  var order = new Order({
+    userChoices: request.body.userChoices,
     id: request.body.id,
     userId: user.id
   });
+
+  console.log(order);
 
   order.save(function (error) {
 
@@ -329,16 +329,16 @@ apiRouter.use(function verifyToken(request, response, next) {
 });
 
 
-apiRouter.get('/users/orders/:id/', function getAllOrders(request, response) {
+apiRouter.get('/orders/user/:userId/', function getAllOrders(request, response) {
 
   console.log(request.params);
 
-  var id = request.params.id;
+  var id = request.params.userId;
 
   console.log(id);
   console.log(request.body);
 
-  Orders.find( { id: id }, function handleGetOrders(error, orders) {
+  Order.find( { userId: id }, function handleGetOrders(error, orders) {
 
     if (error) {
           response.status(500).json({
@@ -351,7 +351,71 @@ apiRouter.get('/users/orders/:id/', function getAllOrders(request, response) {
 
     response.json(orders);
   });
-})
+});
+
+
+apiRouter.get('/orders/:id/', function getOrder(request, response) {
+
+  console.log(request.params);
+
+  var id = request.params.id;
+
+  console.log(id);
+  console.log(request.body);
+
+  Order.findOne( { id: id }, function handleGetOrders(error, order) {
+
+    if (error) {
+          response.status(500).json({
+            success: false,
+            message: 'Internal server error'
+          });
+
+          throw error;
+        }
+
+    response.json(order);
+  });
+});
+
+
+
+apiRouter.delete('/orders/:id/', function deleteOrder(request, response) {
+
+  console.log(request.params);
+
+  var id = request.params.id;
+
+  console.log(id);
+  console.log(request.body);
+
+  Order.findOne( { id: id }, function handleGetOrders(error, order) {
+
+    if (error) {
+          response.status(500).json({
+            success: false,
+            message: 'Internal server error'
+          });
+
+          throw error;
+        }
+
+      if (order) {
+        order.remove(function (error) {
+          if (error) {
+          response.status(500).send(error);
+          return;
+        }
+
+        response.status(204);
+      });
+      return;
+    }
+    response.status(404).json({});
+  });
+});
+
+
 
 app.use('/api', apiRouter);
 
