@@ -34,6 +34,7 @@ apiRouter.post('/users/authenticate', function authenticateUser(request, respons
     email: request.body.email
   }, function handleQuery(error, user) {
 
+    console.log(request.body.email);
     if (error) {
       response.status(500).json({
         success: false,
@@ -392,25 +393,25 @@ apiRouter.delete('/orders/:id/', function deleteOrder(request, response) {
   Order.findOne( { id: id }, function handleGetOrders(error, order) {
 
     if (error) {
-          response.status(500).json({
-            success: false,
-            message: 'Internal server error'
-          });
+      response.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+      throw error;
+    }
 
-          throw error;
-        }
-
-      if (order) {
-        order.remove(function (error) {
-          if (error) {
+    if (order) {
+      Order.remove({ id: id }, function (error) {
+        console.log("callback function called");
+        if (error) {
           response.status(500).send(error);
           return;
         }
-
-        response.status(204);
+        response.status(204).json({success: true});
       });
       return;
     }
+
     response.status(404).json({});
   });
 });
